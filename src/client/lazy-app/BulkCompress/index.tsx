@@ -12,7 +12,7 @@ import { drawableToImageData } from '../util/canvas';
 import { cleanMerge } from '../util/clean-modify';
 import WorkerBridge from '../worker-bridge';
 import Settings, { FirstFileInfo } from './Settings';
-import ResultsList, { ResultItem } from './ResultsList';
+import FileList, { ResultItem } from './FileList';
 import { createZip } from './zip';
 
 const POOL_SIZE = 4;
@@ -29,6 +29,7 @@ interface State {
   resizeOptions: ProcessorOptions['resize'];
   firstFileInfo?: FirstFileInfo;
   results: ResultItem[];
+  selectedId: number;
   started: boolean;
   zipping: boolean;
 }
@@ -49,8 +50,10 @@ export default class BulkCompress extends Component<Props, State> {
     results: this.props.files.map((file, id) => ({
       id,
       sourceFile: file,
-      status: 'queued',
+      status: 'queued' as const,
+      previewUrl: URL.createObjectURL(file),
     })),
+    selectedId: 0,
     started: false,
     zipping: false,
   };
@@ -68,6 +71,7 @@ export default class BulkCompress extends Component<Props, State> {
   componentWillUnmount(): void {
     this.abortController.abort();
     for (const result of this.state.results) {
+      URL.revokeObjectURL(result.previewUrl);
       if (result.downloadUrl) URL.revokeObjectURL(result.downloadUrl);
     }
   }
@@ -128,6 +132,10 @@ export default class BulkCompress extends Component<Props, State> {
     resizeOptions: ProcessorOptions['resize'],
   ): void => {
     this.setState({ resizeOptions });
+  };
+
+  private onSelectFile = (id: number): void => {
+    this.setState({ selectedId: id });
   };
 
   private updateResult = (id: number, patch: Partial<ResultItem>): void => {
@@ -249,6 +257,7 @@ export default class BulkCompress extends Component<Props, State> {
       resizeOptions,
       firstFileInfo,
       results,
+      selectedId,
       started,
       zipping,
     }: State,
@@ -282,7 +291,11 @@ export default class BulkCompress extends Component<Props, State> {
             Compress all ({results.length})
           </button>
         )}
-        {started && <ResultsList results={results} />}
+        <FileList
+          results={results}
+          selectedId={selectedId}
+          onSelect={this.onSelectFile}
+        />
         {allFinished && hasDoneResults && (
           <button
             class={style.zipBtn}

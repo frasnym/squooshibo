@@ -1,0 +1,99 @@
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  min-height: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr max-content;
+  align-items: center;
+  border-bottom: 1px solid var(--dim-text);
+}
+
+.row-selected {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.select-button {
+  composes: unbutton from global;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+}
+
+.thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--dim-text);
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-queued {
+  background: var(--less-light-gray);
+}
+
+.dot-processing {
+  background: var(--blue);
+}
+
+.dot-done {
+  background: #2ecc71;
+}
+
+.dot-error {
+  background: #e74c3c;
+}
+
+.download {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.download svg {
+  width: 19px;
+  height: 19px;
+  fill: currentColor;
+  display: block;
+}
