@@ -59,7 +59,7 @@
 @media (max-width: 860px) {
   .columns {
     grid-template-columns: 1fr;
-    grid-template-rows: max-content 1fr max-content;
+    grid-template-rows: max-content minmax(280px, 1fr) max-content;
     overflow-y: auto;
   }
 }

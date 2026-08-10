@@ -33,6 +33,7 @@ interface Props {
   firstFileInfo?: FirstFileInfo;
   onResizeEnabledChange(enabled: boolean): void;
   onResizeOptionsChange(newOptions: ProcessorOptions['resize']): void;
+  disabled?: boolean;
 }
 
 interface State {
@@ -80,6 +81,7 @@ export default class Settings extends Component<Props, State> {
       resizeOptions,
       firstFileInfo,
       onResizeOptionsChange,
+      disabled,
     }: Props,
     { supportedEncoderMap }: State,
   ) {
@@ -88,7 +90,12 @@ export default class Settings extends Component<Props, State> {
       'Options' in encoder ? encoder.Options : undefined;
 
     return (
-      <div class={wrapStyle.settingsWrap}>
+      <div
+        class={
+          wrapStyle.settingsWrap +
+          (disabled ? ` ${wrapStyle.settingsDisabled}` : '')
+        }
+      >
         <div class={style.optionsScroller}>
           <label
             class={

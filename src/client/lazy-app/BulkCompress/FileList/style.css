@@ -5,13 +5,14 @@
   overflow-y: auto;
   min-height: 0;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--white);
 }
 
 .row {
   display: grid;
   grid-template-columns: 1fr max-content;
   align-items: center;
-  border-bottom: 1px solid var(--dim-text);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .row-selected {
@@ -55,7 +56,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  color: var(--dim-text);
+  color: var(--less-light-gray);
   font-size: 0.9rem;
   white-space: nowrap;
   overflow: hidden;
@@ -89,6 +90,7 @@
   display: flex;
   align-items: center;
   padding: 0 1rem;
+  color: inherit;
 }
 
 .download svg {

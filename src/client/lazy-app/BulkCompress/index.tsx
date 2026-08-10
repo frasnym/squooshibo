@@ -60,6 +60,11 @@ export default class BulkCompress extends Component<Props, State> {
   };
 
   private abortController = new AbortController();
+  private batchSettings: {
+    encoderState: EncoderState;
+    resizeEnabled: boolean;
+    resizeOptions: ProcessorOptions['resize'];
+  } | null = null;
   private workerBridges = Array.from(
     { length: Math.min(POOL_SIZE, this.props.files.length) },
     () => new WorkerBridge(),
@@ -167,14 +172,20 @@ export default class BulkCompress extends Component<Props, State> {
 
       let processedData = imageData;
 
-      if (this.state.resizeEnabled) {
+      // Use the settings snapshot taken when the batch started, not live
+      // state, so every file in one "Compress all" run shares the exact
+      // same format/quality/resize settings even if the user edits the
+      // sidebar mid-batch.
+      const { encoderState, resizeEnabled, resizeOptions } =
+        this.batchSettings!;
+
+      if (resizeEnabled) {
         const source: SourceImage = {
           file: sourceFile,
           decoded: imageData,
           preprocessed: imageData,
           vectorImage,
         };
-        const resizeOptions = this.state.resizeOptions;
         const safeResizeOptions = (
           resizeOptions.method === 'vector' && !vectorImage
             ? { ...resizeOptions, method: defaultResizeOptions.method }
@@ -192,7 +203,7 @@ export default class BulkCompress extends Component<Props, State> {
       const outputFile = await compressImage(
         signal,
         processedData,
-        this.state.encoderState,
+        encoderState,
         sourceFile.name,
         workerBridge,
       );
@@ -214,6 +225,11 @@ export default class BulkCompress extends Component<Props, State> {
   };
 
   private onCompressAllClick = async (): Promise<void> => {
+    this.batchSettings = {
+      encoderState: this.state.encoderState,
+      resizeEnabled: this.state.resizeEnabled,
+      resizeOptions: this.state.resizeOptions,
+    };
     this.setState({ started: true });
 
     const queue = this.state.results.map((result) => result.id);
@@ -312,6 +328,7 @@ export default class BulkCompress extends Component<Props, State> {
             firstFileInfo={firstFileInfo}
             onResizeEnabledChange={this.onResizeEnabledChange}
             onResizeOptionsChange={this.onResizeOptionsChange}
+            disabled={started}
           />
         </div>
       </div>
