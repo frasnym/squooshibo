@@ -1,23 +1,65 @@
 .bulk-compress {
   composes: abs-fill from global;
   display: grid;
-  grid-template-rows: max-content 1fr max-content;
+  grid-template-rows: max-content 1fr;
   overflow: hidden;
+  background: var(--off-black);
+}
+
+.top-bar {
+  display: grid;
+  grid-template-columns: max-content 1fr max-content;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1rem;
+  color: var(--white);
 }
 
 .back {
   composes: unbutton from global;
-  padding: 1rem;
+  padding: 1rem 0;
+  color: inherit;
   justify-self: start;
+}
+
+.status {
+  justify-self: center;
+  font-size: 0.9rem;
+  color: var(--less-light-gray);
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-self: end;
 }
 
 .compress-all-btn,
 .zip-btn {
   composes: unbutton from global;
-  margin: 1rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.6rem 1.25rem;
   background: var(--hot-pink);
   color: var(--white);
   border-radius: 0.25rem;
-  justify-self: center;
+}
+
+.compress-all-btn:disabled,
+.zip-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 260px 1fr 320px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 860px) {
+  .columns {
+    grid-template-columns: 1fr;
+    grid-template-rows: max-content 1fr max-content;
+    overflow-y: auto;
+  }
 }

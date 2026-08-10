@@ -269,13 +269,41 @@ export default class BulkCompress extends Component<Props, State> {
       started &&
       results.every((r) => r.status === 'done' || r.status === 'error');
     const hasDoneResults = results.some((r) => r.status === 'done');
+    const doneCount = results.filter((r) => r.status === 'done').length;
 
     return (
       <div class={style.bulkCompress}>
-        <button class={style.back} onClick={onBack}>
-          ← Back
-        </button>
-        {!started && (
+        <div class={style.topBar}>
+          <button class={style.back} onClick={onBack}>
+            ← Back
+          </button>
+          <span class={style.status}>
+            {doneCount} of {results.length} ready
+          </span>
+          <div class={style.actions}>
+            <button
+              class={style.compressAllBtn}
+              onClick={this.onCompressAllClick}
+              disabled={started}
+            >
+              Compress all
+            </button>
+            <button
+              class={style.zipBtn}
+              onClick={this.onDownloadZipClick}
+              disabled={!allFinished || !hasDoneResults || zipping}
+            >
+              {zipping ? 'Zipping…' : 'Download ZIP'}
+            </button>
+          </div>
+        </div>
+        <div class={style.columns}>
+          <FileList
+            results={results}
+            selectedId={selectedId}
+            onSelect={this.onSelectFile}
+          />
+          <Preview result={results.find((r) => r.id === selectedId)} />
           <Settings
             encoderState={encoderState}
             onEncoderStateChange={this.onEncoderStateChange}
@@ -285,30 +313,7 @@ export default class BulkCompress extends Component<Props, State> {
             onResizeEnabledChange={this.onResizeEnabledChange}
             onResizeOptionsChange={this.onResizeOptionsChange}
           />
-        )}
-        {!started && (
-          <button
-            class={style.compressAllBtn}
-            onClick={this.onCompressAllClick}
-          >
-            Compress all ({results.length})
-          </button>
-        )}
-        <FileList
-          results={results}
-          selectedId={selectedId}
-          onSelect={this.onSelectFile}
-        />
-        <Preview result={results.find((r) => r.id === selectedId)} />
-        {allFinished && hasDoneResults && (
-          <button
-            class={style.zipBtn}
-            onClick={this.onDownloadZipClick}
-            disabled={zipping}
-          >
-            {zipping ? 'Zipping…' : 'Download all as ZIP'}
-          </button>
-        )}
+        </div>
       </div>
     );
   }
