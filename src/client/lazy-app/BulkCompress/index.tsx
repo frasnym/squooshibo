@@ -13,6 +13,7 @@ import { cleanMerge } from '../util/clean-modify';
 import WorkerBridge from '../worker-bridge';
 import Settings, { FirstFileInfo } from './Settings';
 import FileList, { ResultItem } from './FileList';
+import Preview from './Preview';
 import { createZip } from './zip';
 
 const POOL_SIZE = 4;
@@ -199,6 +200,8 @@ export default class BulkCompress extends Component<Props, State> {
       this.updateResult(id, {
         status: 'done',
         outputFile,
+        outputWidth: processedData.width,
+        outputHeight: processedData.height,
         downloadUrl: URL.createObjectURL(outputFile),
       });
     } catch (err) {
@@ -296,6 +299,7 @@ export default class BulkCompress extends Component<Props, State> {
           selectedId={selectedId}
           onSelect={this.onSelectFile}
         />
+        <Preview result={results.find((r) => r.id === selectedId)} />
         {allFinished && hasDoneResults && (
           <button
             class={style.zipBtn}
