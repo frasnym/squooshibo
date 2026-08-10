@@ -144,6 +144,19 @@ export default class BulkCompress extends Component<Props, State> {
     this.setState({ selectedId: id });
   };
 
+  private onAddFiles = (files: File[]): void => {
+    this.setState((state) => {
+      const startId = state.results.length;
+      const newResults: ResultItem[] = files.map((file, index) => ({
+        id: startId + index,
+        sourceFile: file,
+        status: 'queued' as const,
+        previewUrl: URL.createObjectURL(file),
+      }));
+      return { results: [...state.results, ...newResults] };
+    });
+  };
+
   private updateResult = (id: number, patch: Partial<ResultItem>): void => {
     this.setState((state) => ({
       results: cleanMerge(state.results, id, patch),
@@ -317,7 +330,9 @@ export default class BulkCompress extends Component<Props, State> {
           <FileList
             results={results}
             selectedId={selectedId}
+            addDisabled={started}
             onSelect={this.onSelectFile}
+            onAddFiles={this.onAddFiles}
           />
           <Preview result={results.find((r) => r.id === selectedId)} />
           <Settings

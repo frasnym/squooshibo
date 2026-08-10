@@ -1,9 +1,10 @@
-import { h, FunctionComponent } from 'preact';
+import { h, Component } from 'preact';
 
 import * as style from './style.css';
 import 'add-css:./style.css';
 import { DownloadIcon } from 'client/lazy-app/icons';
 import { formatSizeChange } from '../util';
+import { linkRef } from 'shared/prerendered-app/util';
 
 export interface ResultItem {
   id: number;
@@ -20,7 +21,9 @@ export interface ResultItem {
 interface Props {
   results: ResultItem[];
   selectedId: number;
+  addDisabled: boolean;
   onSelect: (id: number) => void;
+  onAddFiles: (files: File[]) => void;
 }
 
 const statusDotClass: Record<ResultItem['status'], string> = {
@@ -30,49 +33,86 @@ const statusDotClass: Record<ResultItem['status'], string> = {
   error: style.dotError,
 };
 
-const FileList: FunctionComponent<Props> = ({
-  results,
-  selectedId,
-  onSelect,
-}) => (
-  <ul class={style.list}>
-    {results.map((result) => (
-      <li
-        class={
-          style.row + (result.id === selectedId ? ` ${style.rowSelected}` : '')
-        }
-        key={result.id}
-      >
-        <button class={style.selectButton} onClick={() => onSelect(result.id)}>
-          <img class={style.thumb} src={result.previewUrl} alt="" />
-          <span class={style.info}>
-            <span class={style.name}>{result.sourceFile.name}</span>
-            <span class={style.status}>
-              <span class={`${style.dot} ${statusDotClass[result.status]}`} />
-              {result.status === 'queued' && 'Queued'}
-              {result.status === 'processing' && 'Compressing…'}
-              {result.status === 'error' && (result.errorMessage || 'Failed')}
-              {result.status === 'done' &&
-                result.outputFile &&
-                formatSizeChange(
-                  result.sourceFile.size,
-                  result.outputFile.size,
-                )}
-            </span>
-          </span>
-        </button>
-        {result.status === 'done' && result.downloadUrl && result.outputFile && (
-          <a
-            class={style.download}
-            href={result.downloadUrl}
-            download={result.outputFile.name}
-          >
-            <DownloadIcon />
-          </a>
-        )}
-      </li>
-    ))}
-  </ul>
-);
+export default class FileList extends Component<Props> {
+  private addInput?: HTMLInputElement;
 
-export default FileList;
+  private onAddClick = (): void => {
+    this.addInput!.click();
+  };
+
+  private onAddInputChange = (event: Event): void => {
+    const input = event.target as HTMLInputElement;
+    const files = input.files ? Array.from(input.files) : [];
+    input.value = '';
+    if (files.length === 0) return;
+    this.props.onAddFiles(files);
+  };
+
+  render({ results, selectedId, addDisabled, onSelect }: Props) {
+    return (
+      <div class={style.wrap}>
+        <ul class={style.list}>
+          {results.map((result) => (
+            <li
+              class={
+                style.row +
+                (result.id === selectedId ? ` ${style.rowSelected}` : '')
+              }
+              key={result.id}
+            >
+              <button
+                class={style.selectButton}
+                onClick={() => onSelect(result.id)}
+              >
+                <img class={style.thumb} src={result.previewUrl} alt="" />
+                <span class={style.info}>
+                  <span class={style.name}>{result.sourceFile.name}</span>
+                  <span class={style.status}>
+                    <span
+                      class={`${style.dot} ${statusDotClass[result.status]}`}
+                    />
+                    {result.status === 'queued' && 'Queued'}
+                    {result.status === 'processing' && 'Compressing…'}
+                    {result.status === 'error' &&
+                      (result.errorMessage || 'Failed')}
+                    {result.status === 'done' &&
+                      result.outputFile &&
+                      formatSizeChange(
+                        result.sourceFile.size,
+                        result.outputFile.size,
+                      )}
+                  </span>
+                </span>
+              </button>
+              {result.status === 'done' &&
+                result.downloadUrl &&
+                result.outputFile && (
+                  <a
+                    class={style.download}
+                    href={result.downloadUrl}
+                    download={result.outputFile.name}
+                  >
+                    <DownloadIcon />
+                  </a>
+                )}
+            </li>
+          ))}
+        </ul>
+        <input
+          class={style.hide}
+          ref={linkRef(this, 'addInput')}
+          type="file"
+          multiple
+          onChange={this.onAddInputChange}
+        />
+        <button
+          class={style.addButton}
+          onClick={this.onAddClick}
+          disabled={addDisabled}
+        >
+          + Add more images
+        </button>
+      </div>
+    );
+  }
+}
