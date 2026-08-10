@@ -9,7 +9,6 @@ import { resize } from 'features/processors/resize/client';
 import { defaultOptions as defaultResizeOptions } from 'features/processors/resize/shared/meta';
 import type { SourceImage } from '../Compress';
 import { drawableToImageData } from '../util/canvas';
-import { cleanMerge } from '../util/clean-modify';
 import WorkerBridge from '../worker-bridge';
 import Settings, { FirstFileInfo } from './Settings';
 import FileList, { ResultItem } from './FileList';
@@ -65,6 +64,7 @@ export default class BulkCompress extends Component<Props, State> {
     resizeEnabled: boolean;
     resizeOptions: ProcessorOptions['resize'];
   } | null = null;
+  private nextId = this.props.files.length;
   private workerBridges = Array.from(
     { length: Math.min(POOL_SIZE, this.props.files.length) },
     () => new WorkerBridge(),
@@ -146,21 +146,41 @@ export default class BulkCompress extends Component<Props, State> {
 
   private onAddFiles = (files: File[]): void => {
     if (this.state.started) return;
+    const newResults: ResultItem[] = files.map((file) => ({
+      id: this.nextId++,
+      sourceFile: file,
+      status: 'queued' as const,
+      previewUrl: URL.createObjectURL(file),
+    }));
+    this.setState((state) => ({
+      results: [...state.results, ...newResults],
+    }));
+  };
+
+  private onRemoveFile = (id: number): void => {
+    if (this.state.started) return;
+    const removed = this.state.results.find((r) => r.id === id);
+    if (!removed) return;
+    URL.revokeObjectURL(removed.previewUrl);
+    if (removed.downloadUrl) URL.revokeObjectURL(removed.downloadUrl);
+
     this.setState((state) => {
-      const startId = state.results.length;
-      const newResults: ResultItem[] = files.map((file, index) => ({
-        id: startId + index,
-        sourceFile: file,
-        status: 'queued' as const,
-        previewUrl: URL.createObjectURL(file),
-      }));
-      return { results: [...state.results, ...newResults] };
+      const results = state.results.filter((r) => r.id !== id);
+      return {
+        results,
+        selectedId:
+          state.selectedId === id && results.length > 0
+            ? results[0].id
+            : state.selectedId,
+      };
     });
   };
 
   private updateResult = (id: number, patch: Partial<ResultItem>): void => {
     this.setState((state) => ({
-      results: cleanMerge(state.results, id, patch),
+      results: state.results.map((result) =>
+        result.id === id ? { ...result, ...patch } : result,
+      ),
     }));
   };
 
@@ -169,7 +189,10 @@ export default class BulkCompress extends Component<Props, State> {
     workerBridge: WorkerBridge,
   ): Promise<void> => {
     const signal = this.abortController.signal;
-    const { sourceFile } = this.state.results[id];
+    // Deletion is disabled once the batch starts (see onRemoveFile), so
+    // every id queued in onCompressAllClick is guaranteed to still be
+    // present here.
+    const { sourceFile } = this.state.results.find((r) => r.id === id)!;
 
     this.updateResult(id, { status: 'processing' });
 
@@ -314,7 +337,7 @@ export default class BulkCompress extends Component<Props, State> {
             <button
               class={style.compressAllBtn}
               onClick={this.onCompressAllClick}
-              disabled={started}
+              disabled={started || results.length === 0}
             >
               Compress all
             </button>
@@ -332,8 +355,10 @@ export default class BulkCompress extends Component<Props, State> {
             results={results}
             selectedId={selectedId}
             addDisabled={started}
+            removeDisabled={started}
             onSelect={this.onSelectFile}
             onAddFiles={this.onAddFiles}
+            onRemove={this.onRemoveFile}
           />
           <Preview result={results.find((r) => r.id === selectedId)} />
           <Settings

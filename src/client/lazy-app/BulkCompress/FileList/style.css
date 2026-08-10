@@ -126,3 +126,32 @@
   fill: currentColor;
   display: block;
 }
+
+.row-actions {
+  display: flex;
+  align-items: center;
+}
+
+.remove-button {
+  composes: unbutton from global;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin: 0 0.75rem 0 0;
+  color: var(--less-light-gray);
+  font-size: 1.1rem;
+  line-height: 1;
+  border-radius: 4px;
+}
+
+.remove-button:hover:not(:disabled) {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.remove-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

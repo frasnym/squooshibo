@@ -22,8 +22,10 @@ interface Props {
   results: ResultItem[];
   selectedId: number;
   addDisabled: boolean;
+  removeDisabled: boolean;
   onSelect: (id: number) => void;
   onAddFiles: (files: File[]) => void;
+  onRemove: (id: number) => void;
 }
 
 const statusDotClass: Record<ResultItem['status'], string> = {
@@ -48,7 +50,14 @@ export default class FileList extends Component<Props> {
     this.props.onAddFiles(files);
   };
 
-  render({ results, selectedId, addDisabled, onSelect }: Props) {
+  render({
+    results,
+    selectedId,
+    addDisabled,
+    removeDisabled,
+    onSelect,
+    onRemove,
+  }: Props) {
     return (
       <div class={style.wrap}>
         <ul class={style.list}>
@@ -84,17 +93,27 @@ export default class FileList extends Component<Props> {
                   </span>
                 </span>
               </button>
-              {result.status === 'done' &&
-                result.downloadUrl &&
-                result.outputFile && (
-                  <a
-                    class={style.download}
-                    href={result.downloadUrl}
-                    download={result.outputFile.name}
-                  >
-                    <DownloadIcon />
-                  </a>
-                )}
+              <span class={style.rowActions}>
+                {result.status === 'done' &&
+                  result.downloadUrl &&
+                  result.outputFile && (
+                    <a
+                      class={style.download}
+                      href={result.downloadUrl}
+                      download={result.outputFile.name}
+                    >
+                      <DownloadIcon />
+                    </a>
+                  )}
+                <button
+                  class={style.removeButton}
+                  onClick={() => onRemove(result.id)}
+                  disabled={removeDisabled}
+                  title="Remove image"
+                >
+                  ×
+                </button>
+              </span>
             </li>
           ))}
         </ul>
