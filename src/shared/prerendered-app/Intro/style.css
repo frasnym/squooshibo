@@ -97,6 +97,12 @@
   color: inherit;
 }
 
+.bulk-btn {
+  composes: unbutton from global;
+  text-decoration: underline;
+  color: inherit;
+}
+
 .demos-container {
   position: relative;
   background: var(--deep-blue);

@@ -4,7 +4,7 @@ import * as style from './style.css';
 import 'add-css:./style.css';
 import 'shared/custom-els/loading-spinner';
 import { SourceImage } from '../';
-import prettyBytes from './pretty-bytes';
+import prettyBytes from '../../util/pretty-bytes';
 import { Arrow, DownloadIcon } from 'client/lazy-app/icons';
 
 interface Props {

@@ -15,6 +15,7 @@ import 'shared/custom-els/loading-spinner';
 const ROUTE_EDITOR = '/editor';
 
 const compressPromise = import('client/lazy-app/Compress');
+const bulkCompressPromise = import('client/lazy-app/BulkCompress');
 const swBridgePromise = import('client/lazy-app/sw-bridge');
 
 function back() {
@@ -26,8 +27,10 @@ interface Props {}
 interface State {
   awaitingShareTarget: boolean;
   file?: File;
+  files?: File[];
   isEditorOpen: Boolean;
   Compress?: typeof import('client/lazy-app/Compress').default;
+  BulkCompress?: typeof import('client/lazy-app/BulkCompress').default;
 }
 
 export default class App extends Component<Props, State> {
@@ -37,7 +40,9 @@ export default class App extends Component<Props, State> {
     ),
     isEditorOpen: false,
     file: undefined,
+    files: undefined,
     Compress: undefined,
+    BulkCompress: undefined,
   };
 
   snackbar?: SnackBarElement;
@@ -48,6 +53,14 @@ export default class App extends Component<Props, State> {
     compressPromise
       .then((module) => {
         this.setState({ Compress: module.default });
+      })
+      .catch(() => {
+        this.showSnack('Failed to load app');
+      });
+
+    bulkCompressPromise
+      .then((module) => {
+        this.setState({ BulkCompress: module.default });
       })
       .catch(() => {
         this.showSnack('Failed to load app');
@@ -78,12 +91,17 @@ export default class App extends Component<Props, State> {
     if (!files || files.length === 0) return;
     const file = files[0];
     this.openEditor();
-    this.setState({ file });
+    this.setState({ file, files: undefined });
   };
 
   private onIntroPickFile = (file: File) => {
     this.openEditor();
-    this.setState({ file });
+    this.setState({ file, files: undefined });
+  };
+
+  private onIntroPickFiles = (files: File[]) => {
+    this.openEditor();
+    this.setState({ files, file: undefined });
   };
 
   private showSnack = (
@@ -109,9 +127,18 @@ export default class App extends Component<Props, State> {
 
   render(
     {}: Props,
-    { file, isEditorOpen, Compress, awaitingShareTarget }: State,
+    {
+      file,
+      files,
+      isEditorOpen,
+      Compress,
+      BulkCompress,
+      awaitingShareTarget,
+    }: State,
   ) {
-    const showSpinner = awaitingShareTarget || (isEditorOpen && !Compress);
+    const showSpinner =
+      awaitingShareTarget ||
+      (isEditorOpen && (files ? !BulkCompress : !Compress));
 
     return (
       <div class={style.app}>
@@ -119,11 +146,29 @@ export default class App extends Component<Props, State> {
           {showSpinner ? (
             <loading-spinner class={style.appLoader} />
           ) : isEditorOpen ? (
-            Compress && (
-              <Compress file={file!} showSnack={this.showSnack} onBack={back} />
+            files ? (
+              BulkCompress && (
+                <BulkCompress
+                  files={files}
+                  showSnack={this.showSnack}
+                  onBack={back}
+                />
+              )
+            ) : (
+              Compress && (
+                <Compress
+                  file={file!}
+                  showSnack={this.showSnack}
+                  onBack={back}
+                />
+              )
             )
           ) : (
-            <Intro onFile={this.onIntroPickFile} showSnack={this.showSnack} />
+            <Intro
+              onFile={this.onIntroPickFile}
+              onFiles={this.onIntroPickFiles}
+              showSnack={this.showSnack}
+            />
           )}
           <snack-bar ref={linkRef(this, 'snackbar')} />
         </file-drop>

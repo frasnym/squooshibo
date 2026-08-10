@@ -71,6 +71,7 @@ async function getImageClipboardItem(
 
 interface Props {
   onFile?: (file: File) => void;
+  onFiles?: (files: File[]) => void;
   showSnack?: SnackBarElement['showSnackbar'];
 }
 interface State {
@@ -84,6 +85,7 @@ export default class Intro extends Component<Props, State> {
     showBlobSVG: true,
   };
   private fileInput?: HTMLInputElement;
+  private bulkFileInput?: HTMLInputElement;
   private blobCanvas?: HTMLCanvasElement;
   private installingViaButton = false;
 
@@ -127,6 +129,18 @@ export default class Intro extends Component<Props, State> {
 
   private onOpenClick = () => {
     this.fileInput!.click();
+  };
+
+  private onBulkFileChange = (event: Event): void => {
+    const fileInput = event.target as HTMLInputElement;
+    const files = fileInput.files ? Array.from(fileInput.files) : [];
+    if (files.length === 0) return;
+    this.bulkFileInput!.value = '';
+    this.props.onFiles!(files);
+  };
+
+  private onBulkOpenClick = () => {
+    this.bulkFileInput!.click();
   };
 
   private onDemoClick = async (index: number, event: Event) => {
@@ -233,6 +247,13 @@ export default class Intro extends Component<Props, State> {
           type="file"
           onChange={this.onFileChange}
         />
+        <input
+          class={style.hide}
+          ref={linkRef(this, 'bulkFileInput')}
+          type="file"
+          multiple
+          onChange={this.onBulkFileChange}
+        />
         <div class={style.main}>
           {!__PRERENDER__ && (
             <canvas
@@ -293,6 +314,10 @@ export default class Intro extends Component<Props, State> {
                 ) : (
                   'Paste'
                 )}
+                {' OR '}
+                <button class={style.bulkBtn} onClick={this.onBulkOpenClick}>
+                  Bulk compress
+                </button>
               </div>
             </div>
           </div>

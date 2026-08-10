@@ -1,0 +1,9 @@
+.settings-wrap {
+  --main-theme-color: var(--pink);
+  --hot-theme-color: var(--hot-pink);
+  --header-text-color: var(--white);
+  --scroller-radius: 7px;
+  color: #fff;
+  font-size: 1.2rem;
+  overflow: hidden;
+}
