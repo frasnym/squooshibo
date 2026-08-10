@@ -5,5 +5,12 @@
   --scroller-radius: 7px;
   color: #fff;
   font-size: 1.2rem;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.section-enabler-disabled {
+  opacity: 0.5;
+  cursor: default;
 }

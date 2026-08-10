@@ -3,14 +3,10 @@ import { h, Component } from 'preact';
 import * as style from './style.css';
 import 'add-css:./style.css';
 import type SnackBarElement from 'shared/custom-els/snack-bar';
-import {
-  EncoderState,
-  ProcessorOptions,
-  defaultProcessorState,
-  encoderMap,
-} from '../feature-meta';
+import { EncoderState, ProcessorOptions, encoderMap } from '../feature-meta';
 import { decodeImage, compressImage, processSvg } from '../pipeline';
 import { resize } from 'features/processors/resize/client';
+import { defaultOptions as defaultResizeOptions } from 'features/processors/resize/shared/meta';
 import type { SourceImage } from '../Compress';
 import { drawableToImageData } from '../util/canvas';
 import { cleanMerge } from '../util/clean-modify';
@@ -48,7 +44,7 @@ export default class BulkCompress extends Component<Props, State> {
       options: encoderMap.mozJPEG.meta.defaultOptions,
     },
     resizeEnabled: false,
-    resizeOptions: defaultProcessorState.resize,
+    resizeOptions: defaultResizeOptions,
     firstFileInfo: undefined,
     results: this.props.files.map((file, id) => ({
       id,
@@ -100,15 +96,18 @@ export default class BulkCompress extends Component<Props, State> {
         height = imageData.height;
       }
 
-      this.setState((state) => ({
-        firstFileInfo: { width, height, isVector },
-        resizeOptions: {
-          ...state.resizeOptions,
-          width,
-          height,
-          method: isVector ? 'vector' : state.resizeOptions.method,
-        } as ProcessorOptions['resize'],
-      }));
+      this.setState((state) => {
+        if (signal.aborted) return {};
+        return {
+          firstFileInfo: { width, height, isVector },
+          resizeOptions: {
+            ...state.resizeOptions,
+            width,
+            height,
+            method: isVector ? 'vector' : state.resizeOptions.method,
+          } as ProcessorOptions['resize'],
+        };
+      });
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') return;
       this.props.showSnack(
@@ -169,7 +168,7 @@ export default class BulkCompress extends Component<Props, State> {
         const resizeOptions = this.state.resizeOptions;
         const safeResizeOptions = (
           resizeOptions.method === 'vector' && !vectorImage
-            ? { ...resizeOptions, method: defaultProcessorState.resize.method }
+            ? { ...resizeOptions, method: defaultResizeOptions.method }
             : resizeOptions
         ) as ProcessorOptions['resize'];
 

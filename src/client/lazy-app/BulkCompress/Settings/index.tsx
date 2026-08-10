@@ -90,8 +90,13 @@ export default class Settings extends Component<Props, State> {
     return (
       <div class={wrapStyle.settingsWrap}>
         <div class={style.optionsScroller}>
-          <label class={style.sectionEnabler}>
-            Resize
+          <label
+            class={
+              style.sectionEnabler +
+              (firstFileInfo ? '' : ` ${wrapStyle.sectionEnablerDisabled}`)
+            }
+          >
+            {firstFileInfo ? 'Resize' : 'Resize (reading dimensions…)'}
             <Toggle
               checked={resizeEnabled}
               disabled={!firstFileInfo}
