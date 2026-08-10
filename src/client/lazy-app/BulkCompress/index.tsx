@@ -145,6 +145,7 @@ export default class BulkCompress extends Component<Props, State> {
   };
 
   private onAddFiles = (files: File[]): void => {
+    if (this.state.started) return;
     this.setState((state) => {
       const startId = state.results.length;
       const newResults: ResultItem[] = files.map((file, index) => ({
