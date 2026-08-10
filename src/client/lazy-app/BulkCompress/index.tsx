@@ -3,12 +3,19 @@ import { h, Component } from 'preact';
 import * as style from './style.css';
 import 'add-css:./style.css';
 import type SnackBarElement from 'shared/custom-els/snack-bar';
-import { EncoderState, encoderMap } from '../feature-meta';
+import {
+  EncoderState,
+  ProcessorOptions,
+  defaultProcessorState,
+  encoderMap,
+} from '../feature-meta';
 import { decodeImage, compressImage, processSvg } from '../pipeline';
+import { resize } from 'features/processors/resize/client';
+import type { SourceImage } from '../Compress';
 import { drawableToImageData } from '../util/canvas';
 import { cleanMerge } from '../util/clean-modify';
 import WorkerBridge from '../worker-bridge';
-import Settings from './Settings';
+import Settings, { FirstFileInfo } from './Settings';
 import ResultsList, { ResultItem } from './ResultsList';
 import { createZip } from './zip';
 
@@ -22,6 +29,9 @@ interface Props {
 
 interface State {
   encoderState: EncoderState;
+  resizeEnabled: boolean;
+  resizeOptions: ProcessorOptions['resize'];
+  firstFileInfo?: FirstFileInfo;
   results: ResultItem[];
   started: boolean;
   zipping: boolean;
@@ -37,6 +47,9 @@ export default class BulkCompress extends Component<Props, State> {
       type: 'mozJPEG',
       options: encoderMap.mozJPEG.meta.defaultOptions,
     },
+    resizeEnabled: false,
+    resizeOptions: defaultProcessorState.resize,
+    firstFileInfo: undefined,
     results: this.props.files.map((file, id) => ({
       id,
       sourceFile: file,
@@ -52,6 +65,10 @@ export default class BulkCompress extends Component<Props, State> {
     () => new WorkerBridge(),
   );
 
+  componentDidMount(): void {
+    this.loadFirstFileInfo();
+  }
+
   componentWillUnmount(): void {
     this.abortController.abort();
     for (const result of this.state.results) {
@@ -59,8 +76,59 @@ export default class BulkCompress extends Component<Props, State> {
     }
   }
 
+  private loadFirstFileInfo = async (): Promise<void> => {
+    const signal = this.abortController.signal;
+    const firstFile = this.props.files[0];
+
+    try {
+      let width: number;
+      let height: number;
+      let isVector = false;
+
+      if (isSvg(firstFile)) {
+        const vectorImage = await processSvg(signal, firstFile);
+        width = vectorImage.width;
+        height = vectorImage.height;
+        isVector = true;
+      } else {
+        const imageData = await decodeImage(
+          signal,
+          firstFile,
+          this.workerBridges[0],
+        );
+        width = imageData.width;
+        height = imageData.height;
+      }
+
+      this.setState((state) => ({
+        firstFileInfo: { width, height, isVector },
+        resizeOptions: {
+          ...state.resizeOptions,
+          width,
+          height,
+          method: isVector ? 'vector' : state.resizeOptions.method,
+        } as ProcessorOptions['resize'],
+      }));
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      this.props.showSnack(
+        "Couldn't read image dimensions — resize is unavailable for this batch",
+      );
+    }
+  };
+
   private onEncoderStateChange = (encoderState: EncoderState): void => {
     this.setState({ encoderState });
+  };
+
+  private onResizeEnabledChange = (resizeEnabled: boolean): void => {
+    this.setState({ resizeEnabled });
+  };
+
+  private onResizeOptionsChange = (
+    resizeOptions: ProcessorOptions['resize'],
+  ): void => {
+    this.setState({ resizeOptions });
   };
 
   private updateResult = (id: number, patch: Partial<ResultItem>): void => {
@@ -79,13 +147,43 @@ export default class BulkCompress extends Component<Props, State> {
     this.updateResult(id, { status: 'processing' });
 
     try {
-      const imageData = isSvg(sourceFile)
-        ? drawableToImageData(await processSvg(signal, sourceFile))
-        : await decodeImage(signal, sourceFile, workerBridge);
+      let vectorImage: HTMLImageElement | undefined;
+      let imageData: ImageData;
+
+      if (isSvg(sourceFile)) {
+        vectorImage = await processSvg(signal, sourceFile);
+        imageData = drawableToImageData(vectorImage);
+      } else {
+        imageData = await decodeImage(signal, sourceFile, workerBridge);
+      }
+
+      let processedData = imageData;
+
+      if (this.state.resizeEnabled) {
+        const source: SourceImage = {
+          file: sourceFile,
+          decoded: imageData,
+          preprocessed: imageData,
+          vectorImage,
+        };
+        const resizeOptions = this.state.resizeOptions;
+        const safeResizeOptions = (
+          resizeOptions.method === 'vector' && !vectorImage
+            ? { ...resizeOptions, method: defaultProcessorState.resize.method }
+            : resizeOptions
+        ) as ProcessorOptions['resize'];
+
+        processedData = await resize(
+          signal,
+          source,
+          safeResizeOptions,
+          workerBridge,
+        );
+      }
 
       const outputFile = await compressImage(
         signal,
-        imageData,
+        processedData,
         this.state.encoderState,
         sourceFile.name,
         workerBridge,
@@ -146,7 +244,15 @@ export default class BulkCompress extends Component<Props, State> {
 
   render(
     { onBack }: Props,
-    { encoderState, results, started, zipping }: State,
+    {
+      encoderState,
+      resizeEnabled,
+      resizeOptions,
+      firstFileInfo,
+      results,
+      started,
+      zipping,
+    }: State,
   ) {
     const allFinished =
       started &&
@@ -162,6 +268,11 @@ export default class BulkCompress extends Component<Props, State> {
           <Settings
             encoderState={encoderState}
             onEncoderStateChange={this.onEncoderStateChange}
+            resizeEnabled={resizeEnabled}
+            resizeOptions={resizeOptions}
+            firstFileInfo={firstFileInfo}
+            onResizeEnabledChange={this.onResizeEnabledChange}
+            onResizeOptionsChange={this.onResizeOptionsChange}
           />
         )}
         {!started && (

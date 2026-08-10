@@ -4,10 +4,14 @@ import * as wrapStyle from './style.css';
 import 'add-css:./style.css';
 import * as style from 'client/lazy-app/Compress/Options/style.css';
 import Select from 'client/lazy-app/Compress/Options/Select';
+import Toggle from 'client/lazy-app/Compress/Options/Toggle';
+import Expander from 'client/lazy-app/Compress/Options/Expander';
+import { Options as ResizeOptionsComponent } from 'features/processors/resize/client';
 import {
   EncoderState,
   EncoderOptions,
   EncoderType,
+  ProcessorOptions,
   encoderMap,
 } from 'client/lazy-app/feature-meta';
 import {
@@ -15,9 +19,20 @@ import {
   PartialButNotUndefined,
 } from 'client/lazy-app/util/supported-encoders';
 
+export interface FirstFileInfo {
+  width: number;
+  height: number;
+  isVector: boolean;
+}
+
 interface Props {
   encoderState: EncoderState;
   onEncoderStateChange(newState: EncoderState): void;
+  resizeEnabled: boolean;
+  resizeOptions: ProcessorOptions['resize'];
+  firstFileInfo?: FirstFileInfo;
+  onResizeEnabledChange(enabled: boolean): void;
+  onResizeOptionsChange(newOptions: ProcessorOptions['resize']): void;
 }
 
 interface State {
@@ -52,7 +67,22 @@ export default class Settings extends Component<Props, State> {
     } as EncoderState);
   };
 
-  render({ encoderState }: Props, { supportedEncoderMap }: State) {
+  private onResizeEnabledChange = (event: Event) => {
+    this.props.onResizeEnabledChange(
+      (event.currentTarget as HTMLInputElement).checked,
+    );
+  };
+
+  render(
+    {
+      encoderState,
+      resizeEnabled,
+      resizeOptions,
+      firstFileInfo,
+      onResizeOptionsChange,
+    }: Props,
+    { supportedEncoderMap }: State,
+  ) {
     const encoder = encoderMap[encoderState.type];
     const EncoderOptionComponent =
       'Options' in encoder ? encoder.Options : undefined;
@@ -60,6 +90,26 @@ export default class Settings extends Component<Props, State> {
     return (
       <div class={wrapStyle.settingsWrap}>
         <div class={style.optionsScroller}>
+          <label class={style.sectionEnabler}>
+            Resize
+            <Toggle
+              checked={resizeEnabled}
+              disabled={!firstFileInfo}
+              onChange={this.onResizeEnabledChange}
+            />
+          </label>
+          <Expander>
+            {resizeEnabled && firstFileInfo ? (
+              <ResizeOptionsComponent
+                isVector={firstFileInfo.isVector}
+                inputWidth={firstFileInfo.width}
+                inputHeight={firstFileInfo.height}
+                options={resizeOptions}
+                onChange={onResizeOptionsChange}
+              />
+            ) : null}
+          </Expander>
+
           <h3 class={style.optionsTitle}>Compress</h3>
           <section class={`${style.optionOneCell} ${style.optionsSection}`}>
             {supportedEncoderMap ? (
