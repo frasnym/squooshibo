@@ -11,7 +11,7 @@ import {
   workerResizeMethods,
 } from '../shared/meta';
 import { getContainOffsets } from '../shared/util';
-import type { SourceImage } from 'client/lazy-app/Compress';
+import type { SourceImage } from 'client/lazy-app/pipeline';
 import type WorkerBridge from 'client/lazy-app/worker-bridge';
 import { h, Component } from 'preact';
 import linkState from 'linkstate';

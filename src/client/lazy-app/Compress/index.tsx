@@ -14,6 +14,7 @@ import {
   EncoderOptions,
 } from '../feature-meta';
 import { decodeImage, compressImage, processSvg } from '../pipeline';
+import type { SourceImage } from '../pipeline';
 import Output from './Output';
 import Options from './Options';
 import ResultCache from './result-cache';
@@ -26,13 +27,6 @@ import type SnackBarElement from 'shared/custom-els/snack-bar';
 import { drawableToImageData } from '../util/canvas';
 
 export type OutputType = EncoderType | 'identity';
-
-export interface SourceImage {
-  file: File;
-  decoded: ImageData;
-  preprocessed: ImageData;
-  vectorImage?: HTMLImageElement;
-}
 
 interface SideSettings {
   processorState: ProcessorState;

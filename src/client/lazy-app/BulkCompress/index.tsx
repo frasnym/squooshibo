@@ -7,7 +7,7 @@ import { EncoderState, ProcessorOptions, encoderMap } from '../feature-meta';
 import { decodeImage, compressImage, processSvg } from '../pipeline';
 import { resize } from 'features/processors/resize/client';
 import { defaultOptions as defaultResizeOptions } from 'features/processors/resize/shared/meta';
-import type { SourceImage } from '../Compress';
+import type { SourceImage } from '../pipeline';
 import { drawableToImageData } from '../util/canvas';
 import WorkerBridge from '../worker-bridge';
 import Settings, { FirstFileInfo } from './Settings';

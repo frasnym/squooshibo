@@ -4,7 +4,8 @@ import * as style from '../../Options/style.css';
 import 'add-css:../../Options/style.css';
 import { cleanSet, cleanMerge } from '../../util/clean-modify';
 
-import type { SourceImage, OutputType } from '..';
+import type { OutputType } from '..';
+import type { SourceImage } from '../../pipeline';
 import {
   EncoderOptions,
   EncoderState,

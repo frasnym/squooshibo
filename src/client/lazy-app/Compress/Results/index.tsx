@@ -3,7 +3,7 @@ import { h, Component, Fragment } from 'preact';
 import * as style from './style.css';
 import 'add-css:./style.css';
 import 'shared/custom-els/loading-spinner';
-import { SourceImage } from '../';
+import type { SourceImage } from '../../pipeline';
 import prettyBytes from '../../util/pretty-bytes';
 import { Arrow, DownloadIcon } from 'client/lazy-app/icons';
 

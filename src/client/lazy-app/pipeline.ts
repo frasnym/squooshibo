@@ -11,6 +11,13 @@ import {
 import { EncoderState, encoderMap } from './feature-meta';
 import type WorkerBridge from './worker-bridge';
 
+export interface SourceImage {
+  file: File;
+  decoded: ImageData;
+  preprocessed: ImageData;
+  vectorImage?: HTMLImageElement;
+}
+
 export async function decodeImage(
   signal: AbortSignal,
   blob: Blob,
