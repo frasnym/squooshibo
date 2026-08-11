@@ -31,6 +31,7 @@ interface Props {
   resizeEnabled: boolean;
   resizeOptions: ProcessorOptions['resize'];
   firstFileInfo?: FirstFileInfo;
+  hasFiles: boolean;
   onResizeEnabledChange(enabled: boolean): void;
   onResizeOptionsChange(newOptions: ProcessorOptions['resize']): void;
   disabled?: boolean;
@@ -80,6 +81,7 @@ export default class Settings extends Component<Props, State> {
       resizeEnabled,
       resizeOptions,
       firstFileInfo,
+      hasFiles,
       onResizeOptionsChange,
       disabled,
     }: Props,
@@ -103,7 +105,11 @@ export default class Settings extends Component<Props, State> {
               (firstFileInfo ? '' : ` ${wrapStyle.sectionEnablerDisabled}`)
             }
           >
-            {firstFileInfo ? 'Resize' : 'Resize (reading dimensions…)'}
+            {firstFileInfo
+              ? 'Resize'
+              : hasFiles
+              ? 'Resize (reading dimensions…)'
+              : 'Resize (add an image first)'}
             <Toggle
               checked={resizeEnabled}
               disabled={!firstFileInfo}

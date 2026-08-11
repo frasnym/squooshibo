@@ -64,10 +64,12 @@ export default class BulkCompress extends Component<Props, State> {
     resizeOptions: ProcessorOptions['resize'];
   } | null = null;
   private nextId = this.props.files.length;
+  private hasNotifiedMainAppLoaded = false;
 
   componentDidMount(): void {
     if (this.props.files.length > 0) {
       this.loadFirstFileInfo(this.props.files[0]);
+      this.notifyMainAppLoaded();
     }
   }
 
@@ -118,6 +120,12 @@ export default class BulkCompress extends Component<Props, State> {
     }
   };
 
+  private notifyMainAppLoaded(): void {
+    if (this.hasNotifiedMainAppLoaded) return;
+    this.hasNotifiedMainAppLoaded = true;
+    import('../sw-bridge').then(({ mainAppLoaded }) => mainAppLoaded());
+  }
+
   private onEncoderStateChange = (encoderState: EncoderState): void => {
     this.setState({ encoderState });
   };
@@ -141,6 +149,7 @@ export default class BulkCompress extends Component<Props, State> {
     if (!this.state.firstFileInfo) {
       this.loadFirstFileInfo(files[0]);
     }
+    this.notifyMainAppLoaded();
     const newResults: ResultItem[] = files.map((file) => ({
       id: this.nextId++,
       sourceFile: file,
@@ -304,6 +313,21 @@ export default class BulkCompress extends Component<Props, State> {
     }
   };
 
+  private onStartNewBatchClick = (): void => {
+    for (const result of this.state.results) {
+      URL.revokeObjectURL(result.previewUrl);
+      if (result.downloadUrl) URL.revokeObjectURL(result.downloadUrl);
+    }
+    this.batchSettings = null;
+    this.setState({
+      results: [],
+      selectedId: -1,
+      started: false,
+      firstFileInfo: undefined,
+      zipping: false,
+    });
+  };
+
   render(
     {}: Props,
     {
@@ -330,6 +354,14 @@ export default class BulkCompress extends Component<Props, State> {
             {doneCount} of {results.length} ready
           </span>
           <div class={style.actions}>
+            {allFinished && (
+              <button
+                class={style.newBatchBtn}
+                onClick={this.onStartNewBatchClick}
+              >
+                Start new batch
+              </button>
+            )}
             <button
               class={style.compressAllBtn}
               onClick={this.onCompressAllClick}
@@ -363,6 +395,7 @@ export default class BulkCompress extends Component<Props, State> {
             resizeEnabled={resizeEnabled}
             resizeOptions={resizeOptions}
             firstFileInfo={firstFileInfo}
+            hasFiles={results.length > 0}
             onResizeEnabledChange={this.onResizeEnabledChange}
             onResizeOptionsChange={this.onResizeOptionsChange}
             disabled={started}

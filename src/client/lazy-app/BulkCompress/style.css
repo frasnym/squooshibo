@@ -28,7 +28,8 @@
 }
 
 .compress-all-btn,
-.zip-btn {
+.zip-btn,
+.new-batch-btn {
   composes: unbutton from global;
   padding: 0.6rem 1.25rem;
   background: var(--hot-pink);
