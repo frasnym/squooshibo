@@ -74,7 +74,9 @@ const Index: FunctionalComponent<Props> = () => (
     </head>
     <body>
       <div id="app">
-        <loading-spinner />
+        <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);">
+          <loading-spinner />
+        </div>
         <noscript>
           <style
             dangerouslySetInnerHTML={{
