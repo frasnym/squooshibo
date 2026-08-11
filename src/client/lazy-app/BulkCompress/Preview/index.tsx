@@ -1,5 +1,5 @@
 import { h, Component } from 'preact';
-import '../../Compress/Output/custom-els/TwoUp';
+import './custom-els/TwoUp';
 
 import * as style from './style.css';
 import 'add-css:./style.css';

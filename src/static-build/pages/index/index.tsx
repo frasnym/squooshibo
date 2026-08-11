@@ -18,7 +18,7 @@ import { allSrc } from 'client-bundle:client/initial-app';
 import favicon from 'url:static-build/assets/favicon.ico';
 import ogImage from 'url:static-build/assets/icon-large-maskable.png';
 import { escapeStyleScriptContent, siteOrigin } from 'static-build/utils';
-import Intro from 'shared/prerendered-app/Intro';
+import 'shared/custom-els/loading-spinner';
 import snackbarCss from 'css:../../../shared/custom-els/snack-bar/styles.css';
 import * as snackbarStyle from '../../../shared/custom-els/snack-bar/styles.css';
 
@@ -74,7 +74,7 @@ const Index: FunctionalComponent<Props> = () => (
     </head>
     <body>
       <div id="app">
-        <Intro />
+        <loading-spinner />
         <noscript>
           <style
             dangerouslySetInnerHTML={{

@@ -11,7 +11,6 @@
  * limitations under the License.
  */
 /// <reference path="../../missing-types.d.ts" />
-/// <reference path="../shared/prerendered-app/Intro/missing-types.d.ts" />
 
 declare module 'client-bundle:*' {
   const url: string;
