@@ -3,6 +3,7 @@ import type WorkerBridge from 'client/lazy-app/worker-bridge';
 import { h, Component } from 'preact';
 import { preventDefault, shallowEqual } from 'client/lazy-app/util';
 import * as style from 'client/lazy-app/Options/style.css';
+import 'add-css:client/lazy-app/Options/style.css';
 import Checkbox from 'client/lazy-app/Options/Checkbox';
 import Expander from 'client/lazy-app/Options/Expander';
 import Select from 'client/lazy-app/Options/Select';

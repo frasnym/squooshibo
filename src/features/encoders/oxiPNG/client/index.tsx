@@ -4,6 +4,7 @@ import type WorkerBridge from 'client/lazy-app/worker-bridge';
 import { h, Component } from 'preact';
 import { inputFieldValueAsNumber, preventDefault } from 'client/lazy-app/util';
 import * as style from 'client/lazy-app/Options/style.css';
+import 'add-css:client/lazy-app/Options/style.css';
 import Range from 'client/lazy-app/Options/Range';
 import Checkbox from 'client/lazy-app/Options/Checkbox';
 

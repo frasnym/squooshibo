@@ -7,6 +7,7 @@ import {
   preventDefault,
 } from 'client/lazy-app/util';
 import * as style from 'client/lazy-app/Options/style.css';
+import 'add-css:client/lazy-app/Options/style.css';
 import linkState from 'linkstate';
 import Range from 'client/lazy-app/Options/Range';
 import Checkbox from 'client/lazy-app/Options/Checkbox';

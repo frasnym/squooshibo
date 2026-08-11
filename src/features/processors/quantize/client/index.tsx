@@ -1,6 +1,7 @@
 import { h, Component } from 'preact';
 import { Options as QuantizeOptions } from '../shared/meta';
 import * as style from 'client/lazy-app/Options/style.css';
+import 'add-css:client/lazy-app/Options/style.css';
 import {
   inputFieldValueAsNumber,
   konami,

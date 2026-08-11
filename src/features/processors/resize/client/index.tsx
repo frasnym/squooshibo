@@ -22,6 +22,7 @@ import {
   inputFieldChecked,
 } from 'client/lazy-app/util';
 import * as style from 'client/lazy-app/Options/style.css';
+import 'add-css:client/lazy-app/Options/style.css';
 import { linkRef } from 'shared/prerendered-app/util';
 import Select from 'client/lazy-app/Options/Select';
 import Expander from 'client/lazy-app/Options/Expander';

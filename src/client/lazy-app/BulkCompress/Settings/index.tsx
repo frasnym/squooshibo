@@ -3,6 +3,7 @@ import { h, Component } from 'preact';
 import * as wrapStyle from './style.css';
 import 'add-css:./style.css';
 import * as style from 'client/lazy-app/Options/style.css';
+import 'add-css:client/lazy-app/Options/style.css';
 import Select from 'client/lazy-app/Options/Select';
 import Toggle from 'client/lazy-app/Options/Toggle';
 import Expander from 'client/lazy-app/Options/Expander';
