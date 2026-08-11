@@ -9,27 +9,20 @@ import * as style from './style.css';
 import 'add-css:./style.css';
 import 'file-drop-element';
 import 'shared/custom-els/snack-bar';
-import Intro from 'shared/prerendered-app/Intro';
 import 'shared/custom-els/loading-spinner';
 
-const ROUTE_EDITOR = '/editor';
-
-const compressPromise = import('client/lazy-app/Compress');
 const bulkCompressPromise = import('client/lazy-app/BulkCompress');
 const swBridgePromise = import('client/lazy-app/sw-bridge');
 
-function back() {
-  window.history.back();
-}
+type BulkCompressComponent = InstanceType<
+  typeof import('client/lazy-app/BulkCompress').default
+>;
 
 interface Props {}
 
 interface State {
   awaitingShareTarget: boolean;
-  file?: File;
-  files?: File[];
-  isEditorOpen: Boolean;
-  Compress?: typeof import('client/lazy-app/Compress').default;
+  pendingFiles: File[];
   BulkCompress?: typeof import('client/lazy-app/BulkCompress').default;
 }
 
@@ -38,25 +31,15 @@ export default class App extends Component<Props, State> {
     awaitingShareTarget: new URL(location.href).searchParams.has(
       'share-target',
     ),
-    isEditorOpen: false,
-    file: undefined,
-    files: undefined,
-    Compress: undefined,
+    pendingFiles: [],
     BulkCompress: undefined,
   };
 
   snackbar?: SnackBarElement;
+  bulkCompress?: BulkCompressComponent;
 
   constructor() {
     super();
-
-    compressPromise
-      .then((module) => {
-        this.setState({ Compress: module.default });
-      })
-      .catch(() => {
-        this.showSnack('Failed to load app');
-      });
 
     bulkCompressPromise
       .then((module) => {
@@ -72,8 +55,8 @@ export default class App extends Component<Props, State> {
       const file = await getSharedImage();
       // Remove the ?share-target from the URL
       history.replaceState('', '', '/');
-      this.openEditor();
-      this.setState({ file, awaitingShareTarget: false });
+      this.setState({ awaitingShareTarget: false });
+      this.addFiles([file]);
     });
 
     // Since iOS 10, Apple tries to prevent disabling pinch-zoom. This is great in theory, but
@@ -83,25 +66,24 @@ export default class App extends Component<Props, State> {
     document.body.addEventListener('gesturestart', (event: any) => {
       event.preventDefault();
     });
-
-    window.addEventListener('popstate', this.onPopState);
   }
+
+  private addFiles = (files: File[]): void => {
+    if (this.bulkCompress) {
+      this.bulkCompress.addFiles(files);
+      return;
+    }
+    // BulkCompress hasn't mounted yet (still loading, or awaiting a
+    // share-target file) — buffer the files and hand them over as its
+    // initial `files` prop once it does mount.
+    this.setState((state) => ({
+      pendingFiles: [...state.pendingFiles, ...files],
+    }));
+  };
 
   private onFileDrop = ({ files }: FileDropEvent) => {
     if (!files || files.length === 0) return;
-    const file = files[0];
-    this.openEditor();
-    this.setState({ file, files: undefined });
-  };
-
-  private onIntroPickFile = (file: File) => {
-    this.openEditor();
-    this.setState({ file, files: undefined });
-  };
-
-  private onIntroPickFiles = (files: File[]) => {
-    this.openEditor();
-    this.setState({ files, file: undefined });
+    this.addFiles(files);
   };
 
   private showSnack = (
@@ -112,63 +94,25 @@ export default class App extends Component<Props, State> {
     return this.snackbar.showSnackbar(message, options);
   };
 
-  private onPopState = () => {
-    this.setState({ isEditorOpen: location.pathname === ROUTE_EDITOR });
-  };
-
-  private openEditor = () => {
-    if (this.state.isEditorOpen) return;
-    // Change path, but preserve query string.
-    const editorURL = new URL(location.href);
-    editorURL.pathname = ROUTE_EDITOR;
-    history.pushState(null, '', editorURL.href);
-    this.setState({ isEditorOpen: true });
-  };
-
   render(
     {}: Props,
-    {
-      file,
-      files,
-      isEditorOpen,
-      Compress,
-      BulkCompress,
-      awaitingShareTarget,
-    }: State,
+    { BulkCompress, awaitingShareTarget, pendingFiles }: State,
   ) {
-    const showSpinner =
-      awaitingShareTarget ||
-      (isEditorOpen && (files ? !BulkCompress : !Compress));
+    const showSpinner = awaitingShareTarget || !BulkCompress;
 
     return (
       <div class={style.app}>
         <file-drop onfiledrop={this.onFileDrop} class={style.drop}>
           {showSpinner ? (
             <loading-spinner class={style.appLoader} />
-          ) : isEditorOpen ? (
-            files ? (
-              BulkCompress && (
-                <BulkCompress
-                  files={files}
-                  showSnack={this.showSnack}
-                  onBack={back}
-                />
-              )
-            ) : (
-              Compress && (
-                <Compress
-                  file={file!}
-                  showSnack={this.showSnack}
-                  onBack={back}
-                />
-              )
-            )
           ) : (
-            <Intro
-              onFile={this.onIntroPickFile}
-              onFiles={this.onIntroPickFiles}
-              showSnack={this.showSnack}
-            />
+            BulkCompress && (
+              <BulkCompress
+                files={pendingFiles}
+                showSnack={this.showSnack}
+                ref={linkRef(this, 'bulkCompress')}
+              />
+            )
           )}
           <snack-bar ref={linkRef(this, 'snackbar')} />
         </file-drop>

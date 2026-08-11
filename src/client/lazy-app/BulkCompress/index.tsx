@@ -5,9 +5,9 @@ import 'add-css:./style.css';
 import type SnackBarElement from 'shared/custom-els/snack-bar';
 import { EncoderState, ProcessorOptions, encoderMap } from '../feature-meta';
 import { decodeImage, compressImage, processSvg } from '../pipeline';
+import type { SourceImage } from '../pipeline';
 import { resize } from 'features/processors/resize/client';
 import { defaultOptions as defaultResizeOptions } from 'features/processors/resize/shared/meta';
-import type { SourceImage } from '../pipeline';
 import { drawableToImageData } from '../util/canvas';
 import WorkerBridge from '../worker-bridge';
 import Settings, { FirstFileInfo } from './Settings';
@@ -20,7 +20,6 @@ const POOL_SIZE = 4;
 interface Props {
   files: File[];
   showSnack: SnackBarElement['showSnackbar'];
-  onBack: () => void;
 }
 
 interface State {
@@ -65,13 +64,11 @@ export default class BulkCompress extends Component<Props, State> {
     resizeOptions: ProcessorOptions['resize'];
   } | null = null;
   private nextId = this.props.files.length;
-  private workerBridges = Array.from(
-    { length: Math.min(POOL_SIZE, this.props.files.length) },
-    () => new WorkerBridge(),
-  );
 
   componentDidMount(): void {
-    this.loadFirstFileInfo();
+    if (this.props.files.length > 0) {
+      this.loadFirstFileInfo(this.props.files[0]);
+    }
   }
 
   componentWillUnmount(): void {
@@ -82,26 +79,21 @@ export default class BulkCompress extends Component<Props, State> {
     }
   }
 
-  private loadFirstFileInfo = async (): Promise<void> => {
+  private loadFirstFileInfo = async (file: File): Promise<void> => {
     const signal = this.abortController.signal;
-    const firstFile = this.props.files[0];
 
     try {
       let width: number;
       let height: number;
       let isVector = false;
 
-      if (isSvg(firstFile)) {
-        const vectorImage = await processSvg(signal, firstFile);
+      if (isSvg(file)) {
+        const vectorImage = await processSvg(signal, file);
         width = vectorImage.width;
         height = vectorImage.height;
         isVector = true;
       } else {
-        const imageData = await decodeImage(
-          signal,
-          firstFile,
-          this.workerBridges[0],
-        );
+        const imageData = await decodeImage(signal, file, new WorkerBridge());
         width = imageData.width;
         height = imageData.height;
       }
@@ -144,8 +136,11 @@ export default class BulkCompress extends Component<Props, State> {
     this.setState({ selectedId: id });
   };
 
-  private onAddFiles = (files: File[]): void => {
-    if (this.state.started) return;
+  public addFiles = (files: File[]): void => {
+    if (this.state.started || files.length === 0) return;
+    if (!this.state.firstFileInfo) {
+      this.loadFirstFileInfo(files[0]);
+    }
     const newResults: ResultItem[] = files.map((file) => ({
       id: this.nextId++,
       sourceFile: file,
@@ -270,9 +265,13 @@ export default class BulkCompress extends Component<Props, State> {
     this.setState({ started: true });
 
     const queue = this.state.results.map((result) => result.id);
+    const workerBridges = Array.from(
+      { length: Math.min(POOL_SIZE, queue.length) },
+      () => new WorkerBridge(),
+    );
 
     await Promise.all(
-      this.workerBridges.map(async (workerBridge) => {
+      workerBridges.map(async (workerBridge) => {
         while (queue.length > 0) {
           const id = queue.shift();
           if (id === undefined) return;
@@ -306,7 +305,7 @@ export default class BulkCompress extends Component<Props, State> {
   };
 
   render(
-    { onBack }: Props,
+    {}: Props,
     {
       encoderState,
       resizeEnabled,
@@ -327,9 +326,6 @@ export default class BulkCompress extends Component<Props, State> {
     return (
       <div class={style.bulkCompress}>
         <div class={style.topBar}>
-          <button class={style.back} onClick={onBack}>
-            ← Back
-          </button>
           <span class={style.status}>
             {doneCount} of {results.length} ready
           </span>
@@ -357,7 +353,7 @@ export default class BulkCompress extends Component<Props, State> {
             addDisabled={started}
             removeDisabled={started}
             onSelect={this.onSelectFile}
-            onAddFiles={this.onAddFiles}
+            onAddFiles={this.addFiles}
             onRemove={this.onRemoveFile}
           />
           <Preview result={results.find((r) => r.id === selectedId)} />

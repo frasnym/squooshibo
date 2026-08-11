@@ -8,22 +8,15 @@
 
 .top-bar {
   display: grid;
-  grid-template-columns: max-content 1fr max-content;
+  grid-template-columns: 1fr max-content;
   align-items: center;
   gap: 1rem;
   padding: 0 1rem;
   color: var(--white);
 }
 
-.back {
-  composes: unbutton from global;
-  padding: 1rem 0;
-  color: inherit;
-  justify-self: start;
-}
-
 .status {
-  justify-self: center;
+  justify-self: start;
   font-size: 0.9rem;
   color: var(--less-light-gray);
 }
