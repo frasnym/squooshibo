@@ -1,6 +1,6 @@
 import { h, Component } from 'preact';
-import * as style from 'client/lazy-app/Compress/Options/style.css';
-import Range from 'client/lazy-app/Compress/Options/Range';
+import * as style from 'client/lazy-app/Options/style.css';
+import Range from 'client/lazy-app/Options/Range';
 
 interface EncodeOptions {
   quality: number;

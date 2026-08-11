@@ -2,13 +2,13 @@ import { EncodeOptions, AVIFTune, defaultOptions } from '../shared/meta';
 import type WorkerBridge from 'client/lazy-app/worker-bridge';
 import { h, Component } from 'preact';
 import { preventDefault, shallowEqual } from 'client/lazy-app/util';
-import * as style from 'client/lazy-app/Compress/Options/style.css';
-import Checkbox from 'client/lazy-app/Compress/Options/Checkbox';
-import Expander from 'client/lazy-app/Compress/Options/Expander';
-import Select from 'client/lazy-app/Compress/Options/Select';
-import Range from 'client/lazy-app/Compress/Options/Range';
+import * as style from 'client/lazy-app/Options/style.css';
+import Checkbox from 'client/lazy-app/Options/Checkbox';
+import Expander from 'client/lazy-app/Options/Expander';
+import Select from 'client/lazy-app/Options/Select';
+import Range from 'client/lazy-app/Options/Range';
 import linkState from 'linkstate';
-import Revealer from 'client/lazy-app/Compress/Options/Revealer';
+import Revealer from 'client/lazy-app/Options/Revealer';
 
 export const encode = (
   signal: AbortSignal,

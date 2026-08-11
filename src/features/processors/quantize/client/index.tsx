@@ -1,14 +1,14 @@
 import { h, Component } from 'preact';
 import { Options as QuantizeOptions } from '../shared/meta';
-import * as style from 'client/lazy-app/Compress/Options/style.css';
+import * as style from 'client/lazy-app/Options/style.css';
 import {
   inputFieldValueAsNumber,
   konami,
   preventDefault,
 } from 'client/lazy-app/util';
-import Expander from 'client/lazy-app/Compress/Options/Expander';
-import Select from 'client/lazy-app/Compress/Options/Select';
-import Range from 'client/lazy-app/Compress/Options/Range';
+import Expander from 'client/lazy-app/Options/Expander';
+import Select from 'client/lazy-app/Options/Select';
+import Range from 'client/lazy-app/Options/Range';
 
 const konamiPromise = konami();
 

@@ -3,9 +3,9 @@ import { EncodeOptions } from '../shared/meta';
 import type WorkerBridge from 'client/lazy-app/worker-bridge';
 import { h, Component } from 'preact';
 import { inputFieldValueAsNumber, preventDefault } from 'client/lazy-app/util';
-import * as style from 'client/lazy-app/Compress/Options/style.css';
-import Range from 'client/lazy-app/Compress/Options/Range';
-import Checkbox from 'client/lazy-app/Compress/Options/Checkbox';
+import * as style from 'client/lazy-app/Options/style.css';
+import Range from 'client/lazy-app/Options/Range';
+import Checkbox from 'client/lazy-app/Options/Checkbox';
 
 export async function encode(
   signal: AbortSignal,

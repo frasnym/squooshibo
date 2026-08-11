@@ -21,11 +21,11 @@ import {
   preventDefault,
   inputFieldChecked,
 } from 'client/lazy-app/util';
-import * as style from 'client/lazy-app/Compress/Options/style.css';
+import * as style from 'client/lazy-app/Options/style.css';
 import { linkRef } from 'shared/prerendered-app/util';
-import Select from 'client/lazy-app/Compress/Options/Select';
-import Expander from 'client/lazy-app/Compress/Options/Expander';
-import Checkbox from 'client/lazy-app/Compress/Options/Checkbox';
+import Select from 'client/lazy-app/Options/Select';
+import Expander from 'client/lazy-app/Options/Expander';
+import Checkbox from 'client/lazy-app/Options/Checkbox';
 
 /**
  * Return whether a set of options are worker resize options.

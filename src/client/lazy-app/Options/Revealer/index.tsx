@@ -1,7 +1,7 @@
 import { h, Component } from 'preact';
 import * as style from './style.css';
 import 'add-css:./style.css';
-import { Arrow } from '../../../icons';
+import { Arrow } from '../../icons';
 
 interface Props extends preact.JSX.HTMLAttributes {}
 interface State {}

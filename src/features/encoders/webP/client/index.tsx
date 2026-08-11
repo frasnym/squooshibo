@@ -6,13 +6,13 @@ import {
   inputFieldValueAsNumber,
   preventDefault,
 } from 'client/lazy-app/util';
-import * as style from 'client/lazy-app/Compress/Options/style.css';
+import * as style from 'client/lazy-app/Options/style.css';
 import linkState from 'linkstate';
-import Range from 'client/lazy-app/Compress/Options/Range';
-import Checkbox from 'client/lazy-app/Compress/Options/Checkbox';
-import Expander from 'client/lazy-app/Compress/Options/Expander';
-import Select from 'client/lazy-app/Compress/Options/Select';
-import Revealer from 'client/lazy-app/Compress/Options/Revealer';
+import Range from 'client/lazy-app/Options/Range';
+import Checkbox from 'client/lazy-app/Options/Checkbox';
+import Expander from 'client/lazy-app/Options/Expander';
+import Select from 'client/lazy-app/Options/Select';
+import Revealer from 'client/lazy-app/Options/Revealer';
 
 export const encode = (
   signal: AbortSignal,

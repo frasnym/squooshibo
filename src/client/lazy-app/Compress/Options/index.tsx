@@ -1,7 +1,7 @@
 import { h, Component } from 'preact';
 
-import * as style from './style.css';
-import 'add-css:./style.css';
+import * as style from '../../Options/style.css';
+import 'add-css:../../Options/style.css';
 import { cleanSet, cleanMerge } from '../../util/clean-modify';
 
 import type { SourceImage, OutputType } from '..';
@@ -12,9 +12,9 @@ import {
   ProcessorOptions,
   encoderMap,
 } from '../../feature-meta';
-import Expander from './Expander';
-import Toggle from './Toggle';
-import Select from './Select';
+import Expander from '../../Options/Expander';
+import Toggle from '../../Options/Toggle';
+import Select from '../../Options/Select';
 import { Options as QuantOptionsComponent } from 'features/processors/quantize/client';
 import { Options as ResizeOptionsComponent } from 'features/processors/resize/client';
 import { ImportIcon, SaveIcon, SwapIcon } from 'client/lazy-app/icons';
